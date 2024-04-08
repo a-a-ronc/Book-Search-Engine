@@ -8,10 +8,11 @@
     "watch": "nodemon server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Aaron Cendejas",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^4.0.1",
+    "are-we-there-yet": "^4.0.2",
+    "bcrypt": "^5.0.1",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^7.0.2"

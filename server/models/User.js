@@ -1,3 +1,4 @@
+// Import necessary modules and components
 const { Schema, model } = require('mongoose');
 const bcrypt = require('bcrypt');
 

@@ -6,13 +6,18 @@
   "scripts": {
     "start": "node server/server.js",
     "develop": "concurrently \"cd server && npm run watch\" \"cd client && npm start\"",
-    "install": "cd server && npm i && cd ../client && npm i",
-    "build": "cd client && npm run build"
+    "install": "cd server && npm i && cd ../client && npm i --production=false",
+    "build": "cd client && npm run build",
+    "render-build": "npm install && npm run build"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Aaron Cendejas",
+  "license": "MIT",
   "devDependencies": {
     "concurrently": "^5.1.0"
+  },
+  "dependencies": {
+    "apollo-server-express": "^3.13.0",
+    "bcrypt": "^5.1.1"
   }
 }

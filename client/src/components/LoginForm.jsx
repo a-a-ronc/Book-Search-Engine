@@ -1,83 +1,78 @@
-// see SignupForm.js for comments
-import React, { useState } from 'react';
-import { Form, Button, Alert } from 'react-bootstrap';
-import { useMutation } from '@apollo/client';
-import { LOGIN_USER } from '../utils/mutations';
+// Import necessary modules and components
+import { useState } from 'react'; // Import useState hook from React
+import { Form, Button, Alert } from 'react-bootstrap'; // Import Form, Button, and Alert components from react-bootstrap
+import { useMutation, gql } from '@apollo/client'; // Import useMutation hook and gql function from Apollo Client
+import Auth from '../utils/auth'; // Import Auth utility functions
 
-// import { loginUser } from '../utils/API';
-import Auth from '../utils/auth';
+// Define the GraphQL mutation for logging in a user
+const LOGIN_USER = gql`
+  mutation login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
+      token
+      user {
+        _id
+        username
+      }
+    }
+  }
+`;
 
+// Define LoginForm functional component
 const LoginForm = () => {
+  // Define state variables using useState hook
   const [userFormData, setUserFormData] = useState({ email: '', password: '' });
-  const [validated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [login] = useMutation(LOGIN_USER);
 
+  // Apollo's useMutation hook to execute LOGIN_USER mutation
+  const [login, { loading, error }] = useMutation(LOGIN_USER, {
+    onCompleted: (data) => { // Function to execute on successful completion of mutation
+      Auth.login(data.login.token); // Call login function from Auth utility with token from mutation response
+    }
+  });
+
+  // Function to handle input changes
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setUserFormData({ ...userFormData, [name]: value });
   };
 
+  // Function to handle form submission
   const handleFormSubmit = async (event) => {
-    event.preventDefault();
-
-    // check if form has everything (as per react-bootstrap docs)
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
+    event.preventDefault(); // Prevent default form submission behavior
     try {
-      const { data } = await login({
-        variables: { ...userFormData },
+      await login({ // Execute login mutation with userFormData
+        variables: userFormData
       });
-
-      // if (!response.ok) {
-      //   throw new Error('something went wrong!');
-      // }
-
-      Auth.login(data.login.token);
     } catch (err) {
-      console.error(err);
-      setShowAlert(true);
+      console.error(err); // Log any errors
+      setShowAlert(true); // Set showAlert state to true to display alert
     }
-
-    setUserFormData({
-      username: '',
-      email: '',
-      password: '',
-    });
   };
 
+  // Return JSX for LoginForm component
   return (
     <>
-      <Form noValidate validated={validated} onSubmit={handleFormSubmit}>
-        <Alert
-          dismissible
-          onClose={() => setShowAlert(false)}
-          show={showAlert}
-          variant="danger"
-        >
-          Something went wrong with your login credentials!
+      {showAlert && ( // Display alert if showAlert state is true
+        <Alert dismissible onClose={() => setShowAlert(false)} variant="danger">
+          Something went wrong with your login!
+          {error && <div>{error.message}</div>} {/* Display error message if error exists */}
         </Alert>
-        <Form.Group className="mb-3">
-          <Form.Label htmlFor="email">Email</Form.Label>
+      )}
+      <Form noValidate onSubmit={handleFormSubmit}> {/* Form with onSubmit handler */}
+        <Form.Group className="mb-3"> {/* Form Group for Email input */}
+          <Form.Label htmlFor="email">Email</Form.Label> {/* Label for Email input */}
           <Form.Control
-            type="text"
+            type="email"
             placeholder="Your email"
             name="email"
             onChange={handleInputChange}
             value={userFormData.email}
             required
           />
-          <Form.Control.Feedback type="invalid">
-            Email is required!
-          </Form.Control.Feedback>
         </Form.Group>
 
-        <Form.Group className="mb-3">
-          <Form.Label htmlFor="password">Password</Form.Label>
+        <Form.Group className="mb-3"> {/* Form Group for Password input */}
+          <Form.Label htmlFor="password">Password</Form.Label> {/* Label for Password input */}
           <Form.Control
             type="password"
             placeholder="Your password"
@@ -86,15 +81,8 @@ const LoginForm = () => {
             value={userFormData.password}
             required
           />
-          <Form.Control.Feedback type="invalid">
-            Password is required!
-          </Form.Control.Feedback>
         </Form.Group>
-        <Button
-          disabled={!(userFormData.email && userFormData.password)}
-          type="submit"
-          variant="success"
-        >
+        <Button type="submit" variant="success" disabled={loading}> {/* Submit Button */}
           Submit
         </Button>
       </Form>
@@ -102,4 +90,5 @@ const LoginForm = () => {
   );
 };
 
+// Export LoginForm component as default
 export default LoginForm;
